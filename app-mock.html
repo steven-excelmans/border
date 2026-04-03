@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prairieborder Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f0e8;
+  --bg-warm: #f0ebe1;
+  --card: #fffdf8;
+  --card-hover: #fff;
+  --ink: #2a2520;
+  --ink-70: rgba(42,37,32,0.7);
+  --ink-40: rgba(42,37,32,0.4);
+  --ink-20: rgba(42,37,32,0.2);
+  --ink-10: rgba(42,37,32,0.1);
+  --moss: #4a5a3c;
+  --moss-light: #6b7d5a;
+  --moss-pale: #d4dbc8;
+  --moss-10: rgba(74,90,60,0.1);
+  --copper: #b87333;
+  --copper-light: #d4956a;
+  --copper-10: rgba(184,115,51,0.1);
+  --terra: #8b5e3c;
+  --border: #d6cfc4;
+  --border-light: #e8e2d6;
+  --shadow-sm: 0 1px 3px rgba(42,37,32,0.06);
+  --shadow-md: 0 4px 12px rgba(42,37,32,0.08);
+  --shadow-lg: 0 8px 32px rgba(42,37,32,0.1);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+
+  --c-roze: #e91e8c; --c-paars: #7b1fa2; --c-wit: #e0e0e0;
+  --c-geel: #fdd835; --c-oranje: #f57c00; --c-rood: #d32f2f;
+  --c-blauw: #1976d2; --c-groen: #4caf50; --c-lila: #9575cd;
+  --c-rozepaars: #ad1457;
+
+  --cat-grassen: #7cb342; --cat-cool: #5c6bc0; --cat-warm-a: #ef5350;
+  --cat-warm-b: #ff7043; --cat-asters: #ab47bc; --cat-extra: #78909c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scrollbar-width: none; scroll-behavior: smooth; }
+html::-webkit-scrollbar { display: none; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════════════ */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+}
+
+.nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  gap: 32px;
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.nav-badges {
+  display: flex;
+  gap: 8px;
+  margin-left: 4px;
+}
+
+.nav-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.nav-badge.plants {
+  background: var(--moss-10);
+  color: var(--moss);
+}
+
+.nav-badge.cost {
+  background: var(--copper-10);
+  color: var(--copper);
+}
+
+.nav-links {
+  display: flex;
+  gap: 0;
+  margin-left: auto;
+  list-style: none;
+}
+
+.nav-links a {
+  display: block;
+  padding: 18px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--ink-40);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.nav-links a:hover { color: var(--ink-70); }
+.nav-links a.active {
+  color: var(--moss);
+  border-bottom-color: var(--moss);
+}
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════════════ */
+.page { max-width: 1400px; margin: 0 auto; padding: 32px; }
+
+.section-divider {
+  margin: 80px 32px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  border: none;
+  border-top: 1px solid var(--border);
+  position: relative;
+}
+
+.section-divider::after {
+  content: attr(data-label);
+  position: absolute;
+  top: -9px;
+  left: 0;
+  background: var(--bg);
+  padding-right: 16px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink-40);
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+  margin-bottom: 28px;
+  line-height: 1.1;
+}
+
+.page-title em { font-style: italic; color: var(--moss); font-weight: 400; }
+
+/* ═══════════════════════════════════════════════════
+   CARDS & PANELS
+   ═══════════════════════════════════════════════════ */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.panel-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--ink-40);
+  margin-bottom: 16px;
+}
+
+/* ═══════════════════════════════════════════════════
+   DASHBOARD
+   ═══════════════════════════════════════════════════ */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Category bars */
+.cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.cat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.cat-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-70);
+}
+
+.cat-nums {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.cat-bar {
+  height: 6px;
+  background: var(--ink-10);
+  border-radius: 3px;
+  overflow: visible;
+  position: relative;
+}
+
+.cat-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.cat-bar-target {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--ink-40);
+  border-radius: 1px;
+}
+
+/* Spectrum */
+.spectrum {
+  height: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+}
+
+.spectrum-seg { height: 100%; transition: width 0.4s ease; }
+
+.spectrum-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--ink-40);
+}
+
+.legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Light bars */
+.light-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.light-icon { width: 20px; text-align: center; font-size: 14px; }
+.light-label { width: 80px; font-size: 11px; color: var(--ink-70); }
+
+.light-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--ink-10);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.light-fill { height: 100%; border-radius: 3px; }
+.light-pct { width: 32px; text-align: right; font-size: 11px; font-weight: 600; color: var(--ink-70); font-variant-numeric: tabular-nums; }
+
+/* Cost */
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ink-10);
+}
+
+.cost-row:last-child { border-bottom: none; font-weight: 600; }
+.cost-supplier { font-size: 12px; color: var(--ink-70); }
+.cost-count { font-size: 11px; color: var(--ink-40); margin-left: 8px; }
+.cost-amount { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ═══════════════════════════════════════════════════
+   CATALOGUS
+   ═══════════════════════════════════════════════════ */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.filter-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 14px 9px 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink);
+  outline: none;
+}
+
+.filter-search:focus { border-color: var(--moss); box-shadow: 0 0 0 3px var(--moss-10); }
+
+.filter-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-40);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-btn:hover { border-color: var(--ink-20); color: var(--ink-70); }
+.filter-btn.active { background: var(--moss); color: #fff; border-color: var(--moss); }
+
+/* Genus header */
+.genus-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 16px 0 12px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 20px;
+}
+
+.genus-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+
+.genus-common { font-size: 12px; color: var(--ink-40); }
+
+.genus-tag {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+.genus-tag.my-list { background: var(--moss); color: #fff; }
+.genus-tag.suggested { background: var(--copper); color: #fff; }
+.genus-tag.shade { background: #2e4a3a; color: #c8dcc8; }
+
+.genus-count { margin-left: auto; font-size: 11px; color: var(--ink-40); }
+
+/* Plant cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.plant-card {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.plant-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.plant-card.selected { border-color: var(--moss); box-shadow: 0 0 0 1px var(--moss); }
+.plant-card.unavailable { opacity: 0.5; }
+
+/* Badge */
+.card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  z-index: 5;
+}
+
+.card-badge.in-border { background: var(--moss); color: #fff; }
+.card-badge.unavailable { background: #999; color: #fff; }
+
+/* Card add button */
+.card-add {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--ink-40);
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.15s;
+}
+
+.card-add:hover { background: var(--moss); color: #fff; border-color: var(--moss); }
+
+/* Image */
+.card-img {
+  height: 160px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-img-gradient {
+  width: 100%;
+  height: 100%;
+}
+
+/* Body */
+.card-body {
+  padding: 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-species {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.3;
+  margin-bottom: 1px;
+}
+
+.card-variant {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: auto;
+}
+
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  background: var(--ink-10);
+  color: var(--ink-70);
+}
+
+.meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+/* Card footer — both suppliers */
+.card-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ink-10);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.supplier-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.supplier-name { color: var(--ink-40); font-weight: 500; }
+.supplier-name .code { color: var(--ink-20); margin-left: 4px; }
+.supplier-price { font-weight: 600; font-variant-numeric: tabular-nums; }
+.supplier-price.cheapest { color: var(--moss); }
+
+.supplier-row.unavailable .supplier-name { color: var(--ink-20); text-decoration: line-through; }
+.supplier-row.unavailable .supplier-price { color: var(--ink-20); }
+
+/* Qty stepper */
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  align-self: stretch;
+}
+
+.qty-btn {
+  width: 32px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ink-40);
+  transition: all 0.1s;
+}
+
+.qty-btn:hover { background: var(--ink-10); color: var(--ink); }
+
+.qty-val {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  padding: 4px 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   MIJN BORDER (TABLE)
+   ═══════════════════════════════════════════════════ */
+.view-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 20px;
+  width: fit-content;
+}
+
+.view-toggle-btn {
+  padding: 7px 16px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--card);
+  border: none;
+  cursor: pointer;
+  color: var(--ink-40);
+}
+
+.view-toggle-btn.active { background: var(--moss); color: #fff; }
+
+.group-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 8px;
+  margin-top: 24px;
+}
+
+.group-header:first-of-type { margin-top: 0; }
+
+.group-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.group-count {
+  font-size: 12px;
+  color: var(--ink-40);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.border-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 90px 90px 80px 60px 70px 30px;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink-10);
+  font-size: 12px;
+}
+
+.border-row:hover { background: var(--ink-10); margin: 0 -8px; padding: 10px 8px; border-radius: var(--radius-sm); }
+
+.row-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.row-thumb-img { width: 100%; height: 100%; object-fit: cover; }
+.row-thumb-gradient { width: 100%; height: 100%; border-radius: var(--radius-sm); }
+
+.row-name { font-size: 12px; }
+.row-species { font-family: var(--font-display); font-style: italic; font-size: 13px; }
+.row-variant { font-weight: 500; font-size: 12px; }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.status-pill.must-have { background: var(--moss-10); color: var(--moss); }
+.status-pill.variant-flex { background: var(--copper-10); color: var(--copper); }
+.status-pill.alternatief { background: rgba(25,118,210,0.1); color: #1976d2; }
+
+.row-stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.row-stepper-btn {
+  width: 24px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ink-40);
+}
+
+.row-stepper-val {
+  width: 28px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.row-supplier {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: var(--font-body);
+  background: var(--card);
+  color: var(--ink-70);
+}
+
+.row-price { font-variant-numeric: tabular-nums; font-weight: 500; }
+.row-total { font-variant-numeric: tabular-nums; font-weight: 600; }
+.row-expand { cursor: pointer; color: var(--ink-40); font-size: 16px; }
+
+/* ═══════════════════════════════════════════════════
+   GENERA GIDS
+   ═══════════════════════════════════════════════════ */
+.genera-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.genera-card {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.genera-card:hover { box-shadow: var(--shadow-md); }
+
+.genera-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.genera-card-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.genera-card-common { font-size: 12px; color: var(--ink-40); }
+
+.genera-desc {
+  font-size: 12px;
+  color: var(--ink-70);
+  line-height: 1.6;
+  margin: 10px 0;
+}
+
+.genera-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--ink-40);
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink-10);
+}
+
+.genera-link {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--moss);
+  text-decoration: none;
+}
+
+.genera-link:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════
+   BESTELLING
+   ═══════════════════════════════════════════════════ */
+.order-section {
+  margin-bottom: 32px;
+}
+
+.order-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.order-section-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.order-section-sub { font-size: 12px; color: var(--ink-40); }
+
+.order-table { width: 100%; border-collapse: collapse; }
+
+.order-table th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink-40);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.order-table th:last-child, .order-table td:last-child { text-align: right; }
+
+.order-table td {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink-10);
+  font-size: 12px;
+}
+
+.order-table .plant-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+}
+
+.order-table .plant-variant { font-weight: 500; font-style: normal; }
+
+.order-total-bar {
+  background: var(--ink);
+  color: #fff;
+  padding: 16px 24px;
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.order-total-label { font-size: 14px; font-weight: 500; }
+.order-total-amount { font-family: var(--font-display); font-size: 28px; font-weight: 300; }
+
+.order-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  transition: all 0.15s;
+}
+
+.btn:hover { border-color: var(--ink-20); }
+.btn.primary { background: var(--moss); color: #fff; border-color: var(--moss); }
+.btn.primary:hover { background: var(--moss-light); }
+
+.custom-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--ink-40);
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.custom-add:hover { border-color: var(--moss); color: var(--moss); }
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .nav-inner { padding: 0 16px; gap: 16px; }
+  .nav-links a { padding: 18px 8px; font-size: 10px; }
+  .page { padding: 20px 16px; }
+  .dash-grid { grid-template-columns: 1fr; }
+  .cat-grid { grid-template-columns: 1fr 1fr; }
+  .genera-grid { grid-template-columns: 1fr; }
+  .card-grid { grid-template-columns: 1fr 1fr; }
+  .border-row { grid-template-columns: 40px 1fr 80px 80px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#/" class="nav-logo">Prairieborder</a>
+    <div class="nav-badges">
+      <span class="nav-badge plants">&#127793; 75/140</span>
+      <span class="nav-badge cost">&#8364;413</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#/" class="active">Dashboard</a></li>
+      <li><a href="#/catalogus">Catalogus</a></li>
+      <li><a href="#/border">Mijn Border</a></li>
+      <li><a href="#/genera">Genera</a></li>
+      <li><a href="#/bestelling">Bestelling</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 1: DASHBOARD
+     ═══════════════════════════════════════════════════ -->
+<div class="page" id="dashboard">
+  <h1 class="page-title"><em>Overzicht</em></h1>
+
+  <div class="dash-grid">
+    <!-- Categories -->
+    <div class="panel">
+      <div class="panel-label">Categorie-balans</div>
+      <div class="cat-grid">
+        <div class="cat-item">
+          <div class="cat-head"><span class="cat-name">Grassen</span><span class="cat-nums">12/21</span></div>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:57%;background:var(--cat-grassen)"></div><div class="cat-bar-target" style="left:100%"></div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-head"><span class="cat-name">Cool Season</span><span class="cat-nums">10/21</span></div>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:48%;background:var(--cat-cool)"></div><div class="cat-bar-target" style="left:100%"></div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-head"><span class="cat-name">Warm Season A</span><span class="cat-nums">22/58</span></div>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:38%;background:var(--cat-warm-a)"></div><div class="cat-bar-target" style="left:100%"></div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-head"><span class="cat-name">Warm Season B</span><span class="cat-nums">8/19</span></div>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:42%;background:var(--cat-warm-b)"></div><div class="cat-bar-target" style="left:100%"></div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-head"><span class="cat-name">Asters</span><span class="cat-nums">10/14</span></div>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:71%;background:var(--cat-asters)"></div><div class="cat-bar-target" style="left:100%"></div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-head"><span class="cat-name">Extra</span><span class="cat-nums">13/7</span></div>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:100%;background:var(--cat-extra)"></div><div class="cat-bar-target" style="left:54%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spectrum + light -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="panel" style="flex:1">
+        <div class="panel-label">Kleurenspectrum</div>
+        <div class="spectrum">
+          <div class="spectrum-seg" style="width:18%;background:var(--c-roze)"></div>
+          <div class="spectrum-seg" style="width:8%;background:var(--c-rozepaars)"></div>
+          <div class="spectrum-seg" style="width:12%;background:var(--c-lila)"></div>
+          <div class="spectrum-seg" style="width:10%;background:var(--c-paars)"></div>
+          <div class="spectrum-seg" style="width:14%;background:var(--c-blauw)"></div>
+          <div class="spectrum-seg" style="width:4%;background:var(--c-groen)"></div>
+          <div class="spectrum-seg" style="width:12%;background:var(--c-geel)"></div>
+          <div class="spectrum-seg" style="width:8%;background:var(--c-oranje)"></div>
+          <div class="spectrum-seg" style="width:14%;background:var(--c-rood)"></div>
+        </div>
+        <div class="spectrum-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--c-roze)"></span>roze (14)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--c-paars)"></span>paars (8)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--c-blauw)"></span>blauw (11)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--c-geel)"></span>geel (9)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--c-rood)"></span>rood (11)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--c-oranje)"></span>oranje (6)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--c-wit)"></span>wit (16)</span>
+        </div>
+      </div>
+
+      <div class="panel" style="flex:1">
+        <div class="panel-label">Lichtbalans</div>
+        <div class="light-row">
+          <span class="light-icon">&#9728;</span>
+          <span class="light-label">Zon</span>
+          <div class="light-bar"><div class="light-fill" style="width:60%;background:#d4956a"></div></div>
+          <span class="light-pct">60%</span>
+        </div>
+        <div class="light-row">
+          <span class="light-icon">&#9925;</span>
+          <span class="light-label">Halfschaduw</span>
+          <div class="light-bar"><div class="light-fill" style="width:27%;background:#8da67b"></div></div>
+          <span class="light-pct">27%</span>
+        </div>
+        <div class="light-row">
+          <span class="light-icon">&#9790;</span>
+          <span class="light-label">Schaduw</span>
+          <div class="light-bar"><div class="light-fill" style="width:13%;background:#5a6b4a"></div></div>
+          <span class="light-pct">13%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cost -->
+    <div class="panel" style="grid-column: 1 / -1">
+      <div class="panel-label">Kosten</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1px 1fr;gap:0;align-items:center">
+        <div style="padding:16px 24px;text-align:center">
+          <div style="font-size:11px;color:var(--ink-40);margin-bottom:4px">Natu-Ral</div>
+          <div style="font-family:var(--font-display);font-size:28px;font-weight:300">&euro;285,00</div>
+          <div style="font-size:11px;color:var(--ink-40);margin-top:2px">62 planten</div>
+        </div>
+        <div style="padding:16px 24px;text-align:center">
+          <div style="font-size:11px;color:var(--ink-40);margin-bottom:4px">Van Asselberghs</div>
+          <div style="font-family:var(--font-display);font-size:28px;font-weight:300">&euro;128,50</div>
+          <div style="font-size:11px;color:var(--ink-40);margin-top:2px">13 planten</div>
+        </div>
+        <div style="width:1px;height:48px;background:var(--border-light)"></div>
+        <div style="padding:16px 24px;text-align:center">
+          <div style="font-size:11px;color:var(--moss);font-weight:600;margin-bottom:4px">Totaal</div>
+          <div style="font-family:var(--font-display);font-size:36px;font-weight:400;color:var(--moss)">&euro;413,50</div>
+          <div style="font-size:11px;color:var(--ink-40);margin-top:2px">75 planten</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:center">
+        <button class="btn">&#8595; Export JSON</button>
+        <button class="btn">&#8593; Import JSON</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 2: CATALOGUS
+     ═══════════════════════════════════════════════════ -->
+<hr class="section-divider" data-label="Catalogus">
+
+<div class="page" id="catalogus">
+  <h1 class="page-title"><em>Catalogus</em></h1>
+
+  <!-- Spectrum filter -->
+  <div class="panel" style="margin-bottom:20px;padding:16px 20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span class="panel-label" style="margin-bottom:0;white-space:nowrap">Kleurenspectrum</span>
+      <div class="spectrum" style="flex:1">
+        <div class="spectrum-seg" style="width:18%;background:var(--c-roze);cursor:pointer"></div>
+        <div class="spectrum-seg" style="width:8%;background:var(--c-rozepaars);cursor:pointer"></div>
+        <div class="spectrum-seg" style="width:12%;background:var(--c-lila);cursor:pointer"></div>
+        <div class="spectrum-seg" style="width:10%;background:var(--c-paars);cursor:pointer"></div>
+        <div class="spectrum-seg" style="width:14%;background:var(--c-blauw);cursor:pointer"></div>
+        <div class="spectrum-seg" style="width:4%;background:var(--c-groen);cursor:pointer"></div>
+        <div class="spectrum-seg" style="width:12%;background:var(--c-geel);cursor:pointer"></div>
+        <div class="spectrum-seg" style="width:8%;background:var(--c-oranje);cursor:pointer"></div>
+        <div class="spectrum-seg" style="width:14%;background:var(--c-rood);cursor:pointer"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" class="filter-search" placeholder="Zoek op naam of variant...">
+    <button class="filter-btn">&#9728; Zon</button>
+    <button class="filter-btn">&#9925; Halfsch.</button>
+    <button class="filter-btn">&#9790; Schaduw</button>
+    <button class="filter-btn active">&#9829; Alleen border</button>
+    <span style="width:1px;height:20px;background:var(--border);flex-shrink:0"></span>
+    <button class="filter-btn">Mijn lijst</button>
+    <button class="filter-btn">Suggestie</button>
+    <button class="filter-btn">Schaduw</button>
+  </div>
+
+  <div class="genus-header">
+    <span class="genus-name">Echinacea</span>
+    <span class="genus-common">zonnehoed</span>
+    <span class="genus-tag my-list">Mijn lijst</span>
+    <span class="genus-count">36 var.</span>
+  </div>
+
+  <div class="card-grid">
+    <!-- Card 1: Selected, qty 3 -->
+    <div class="plant-card selected">
+      <span class="card-badge in-border">In border</span>
+      <div class="card-img"><div class="card-img-gradient" style="background:linear-gradient(145deg,#ad1457,#ad1457cc,#ad145788)"></div></div>
+      <div class="card-body">
+        <div class="card-species">Echinacea purpurea</div>
+        <div class="card-variant">'Magnus'</div>
+        <div class="card-meta">
+          <span class="meta-pill"><span class="meta-dot" style="background:var(--c-rozepaars)"></span>rozepaars</span>
+          <span class="meta-pill">&#8597; 90cm</span>
+          <span class="meta-pill" style="color:var(--copper)">&#9728; zon</span>
+        </div>
+        <div class="card-footer">
+          <div class="supplier-row">
+            <span class="supplier-name">NR<span class="code"> &middot; D</span></span>
+            <span class="supplier-price">&euro;2,20</span>
+          </div>
+          <div class="supplier-row">
+            <span class="supplier-name">VA</span>
+            <span class="supplier-price cheapest">&euro;1,50</span>
+          </div>
+        </div>
+        <div class="qty-stepper">
+          <button class="qty-btn">&minus;</button>
+          <span class="qty-val">3</span>
+          <button class="qty-btn">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Selected, qty 1 -->
+    <div class="plant-card selected">
+      <span class="card-badge in-border">In border</span>
+      <div class="card-img"><div class="card-img-gradient" style="background:linear-gradient(145deg,#d32f2f,#d32f2fcc,#d32f2f88)"></div></div>
+      <div class="card-body">
+        <div class="card-species">Echinacea purpurea</div>
+        <div class="card-variant">'Tomato Soup'</div>
+        <div class="card-meta">
+          <span class="meta-pill"><span class="meta-dot" style="background:var(--c-rood)"></span>rood</span>
+          <span class="meta-pill">&#8597; 75cm</span>
+          <span class="meta-pill" style="color:var(--copper)">&#9728; zon</span>
+        </div>
+        <div class="card-footer">
+          <div class="supplier-row">
+            <span class="supplier-name">NR<span class="code"> &middot; K</span></span>
+            <span class="supplier-price">&euro;6,10</span>
+          </div>
+          <div class="supplier-row">
+            <span class="supplier-name">VA</span>
+            <span class="supplier-price cheapest">&euro;3,00</span>
+          </div>
+        </div>
+        <div class="qty-stepper">
+          <button class="qty-btn">&minus;</button>
+          <span class="qty-val">1</span>
+          <button class="qty-btn">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Not selected -->
+    <div class="plant-card">
+      <span class="card-add">+</span>
+      <div class="card-img"><div class="card-img-gradient" style="background:linear-gradient(145deg,#e0e0e0,#e0e0e0cc,#e0e0e088)"></div></div>
+      <div class="card-body">
+        <div class="card-species">Echinacea purpurea</div>
+        <div class="card-variant">'White Swan'</div>
+        <div class="card-meta">
+          <span class="meta-pill"><span class="meta-dot" style="background:var(--c-wit)"></span>wit</span>
+          <span class="meta-pill">&#8597; 100cm</span>
+          <span class="meta-pill" style="color:var(--copper)">&#9728; zon</span>
+        </div>
+        <div class="card-footer">
+          <div class="supplier-row">
+            <span class="supplier-name">NR<span class="code"> &middot; F</span></span>
+            <span class="supplier-price">&euro;2,70</span>
+          </div>
+          <div class="supplier-row unavailable">
+            <span class="supplier-name">VA</span>
+            <span class="supplier-price">&mdash;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: In border but unavailable -->
+    <div class="plant-card selected unavailable">
+      <span class="card-badge unavailable">In border</span>
+      <div class="card-img"><div class="card-img-gradient" style="background:linear-gradient(145deg,#fdd835,#fdd835cc,#fdd83588)"></div></div>
+      <div class="card-body">
+        <div class="card-species">Echinacea purpurea</div>
+        <div class="card-variant">'Mellow Yellows'</div>
+        <div class="card-meta">
+          <span class="meta-pill"><span class="meta-dot" style="background:var(--c-geel)"></span>geel</span>
+          <span class="meta-pill">&#8597; 60cm</span>
+          <span class="meta-pill" style="color:var(--copper)">&#9728; zon</span>
+        </div>
+        <div class="card-footer">
+          <div class="supplier-row unavailable">
+            <span class="supplier-name">NR</span>
+            <span class="supplier-price">&mdash;</span>
+          </div>
+          <div class="supplier-row unavailable">
+            <span class="supplier-name">VA</span>
+            <span class="supplier-price">&mdash;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 3: MIJN BORDER
+     ═══════════════════════════════════════════════════ -->
+<hr class="section-divider" data-label="Mijn Border">
+
+<div class="page" id="border">
+  <h1 class="page-title">Mijn <em>Border</em></h1>
+
+  <div class="view-toggle">
+    <button class="view-toggle-btn active">Tabel</button>
+    <button class="view-toggle-btn">Kaarten</button>
+  </div>
+
+  <div class="group-header">
+    <span class="group-title">Warm Season A</span>
+    <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--cat-warm-a);color:#fff">22/58</span>
+    <span class="group-count">&euro;68,40</span>
+  </div>
+
+  <!-- Header row -->
+  <div class="border-row" style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--ink-40);border-bottom:1px solid var(--border)">
+    <div></div>
+    <div>Plant</div>
+    <div>Status</div>
+    <div>Aantal</div>
+    <div>Lever.</div>
+    <div>Prijs</div>
+    <div>Totaal</div>
+    <div></div>
+  </div>
+
+  <div class="border-row">
+    <div class="row-thumb"><div class="row-thumb-gradient" style="background:var(--c-rozepaars)"></div></div>
+    <div class="row-name"><span class="row-species">Echinacea purpurea</span><br><span class="row-variant">'Magnus'</span></div>
+    <div><span class="status-pill must-have">&#10022; must-have</span></div>
+    <div><div class="row-stepper"><button class="row-stepper-btn">&minus;</button><span class="row-stepper-val">3</span><button class="row-stepper-btn">+</button></div></div>
+    <div><select class="row-supplier"><option>VA</option><option>NR</option></select></div>
+    <div class="row-price">&euro;1,50</div>
+    <div class="row-total">&euro;4,50</div>
+    <div class="row-expand">&#9662;</div>
+  </div>
+
+  <div class="border-row">
+    <div class="row-thumb"><div class="row-thumb-gradient" style="background:var(--c-rood)"></div></div>
+    <div class="row-name"><span class="row-species">Echinacea purpurea</span><br><span class="row-variant">'Tomato Soup'</span></div>
+    <div><span class="status-pill variant-flex">&#9671; variant-flex</span></div>
+    <div><div class="row-stepper"><button class="row-stepper-btn">&minus;</button><span class="row-stepper-val">2</span><button class="row-stepper-btn">+</button></div></div>
+    <div><select class="row-supplier"><option>VA</option><option>NR</option></select></div>
+    <div class="row-price">&euro;3,00</div>
+    <div class="row-total">&euro;6,00</div>
+    <div class="row-expand">&#9662;</div>
+  </div>
+
+  <div class="border-row">
+    <div class="row-thumb"><div class="row-thumb-gradient" style="background:var(--c-oranje)"></div></div>
+    <div class="row-name"><span class="row-species">Helenium</span><br><span class="row-variant">'Moerheim Beauty'</span></div>
+    <div><span class="status-pill alternatief">&#9675; alternatief</span></div>
+    <div><div class="row-stepper"><button class="row-stepper-btn">&minus;</button><span class="row-stepper-val">4</span><button class="row-stepper-btn">+</button></div></div>
+    <div><select class="row-supplier"><option>NR</option><option>VA</option></select></div>
+    <div class="row-price">&euro;2,40</div>
+    <div class="row-total">&euro;9,60</div>
+    <div class="row-expand">&#9662;</div>
+  </div>
+
+  <div class="border-row">
+    <div class="row-thumb"><div class="row-thumb-gradient" style="background:var(--c-paars)"></div></div>
+    <div class="row-name"><span class="row-species">Veronicastrum virg.</span><br><span class="row-variant">'Fascination'</span></div>
+    <div><span class="status-pill must-have">&#10022; must-have</span></div>
+    <div><div class="row-stepper"><button class="row-stepper-btn">&minus;</button><span class="row-stepper-val">2</span><button class="row-stepper-btn">+</button></div></div>
+    <div><select class="row-supplier"><option>NR</option></select></div>
+    <div class="row-price">&euro;3,60</div>
+    <div class="row-total">&euro;7,20</div>
+    <div class="row-expand">&#9662;</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 4: GENERA GIDS
+     ═══════════════════════════════════════════════════ -->
+<hr class="section-divider" data-label="Genera Gids">
+
+<div class="page" id="genera">
+  <h1 class="page-title">Genera <em>Gids</em></h1>
+
+  <p style="font-size:12px;color:var(--ink-40);margin-bottom:24px;max-width:600px">Genera die nog niet op je lijst staan maar goed zouden passen in je prairieborder. Klik op &ldquo;Catalogus&rdquo; om varianten te bekijken en toe te voegen.</p>
+
+  <div class="group-header" style="margin-top:0">
+    <span class="group-title">Prairie-toevoegingen</span>
+    <span class="group-count">12 genera</span>
+  </div>
+
+  <div class="genera-grid">
+    <div class="genera-card">
+      <div class="genera-card-head">
+        <span class="genera-card-name">Rudbeckia</span>
+        <span class="genera-card-common">zonnehoed</span>
+        <span class="genus-tag suggested" style="margin-left:auto">Suggestie</span>
+      </div>
+      <div class="genera-desc">
+        Klassieke prairieplant met goudgele tot oranje bloemdiscs. R. fulgida 'Goldsturm' is een absolute topper. Vult het gele spectrum aan dat in je huidige selectie ondervertegenwoordigd is. Lang bloeiend (juli-oktober).
+      </div>
+      <div class="genera-stats">
+        <span><strong>0</strong> geselecteerd</span>
+        <span>8 in catalogus</span>
+        <span>&#9728; Zon</span>
+        <a class="genera-link" href="#/catalogus?genus=Rudbeckia">&#8594; Catalogus</a>
+      </div>
+    </div>
+
+    <div class="genera-card">
+      <div class="genera-card-head">
+        <span class="genera-card-name">Molinia</span>
+        <span class="genera-card-common">pijpenstrootje</span>
+        <span class="genus-tag suggested" style="margin-left:auto">Suggestie</span>
+      </div>
+      <div class="genera-desc">
+        H&Eacute;T Oudolf-gras. Transparante sluier-effect, spectaculaire herfstverkleuring, perfecte winterstructuur. Molinia 'Transparent' (200cm) is iconisch. Vult een groot gat in je huidige grassenselectie.
+      </div>
+      <div class="genera-stats">
+        <span><strong>0</strong> geselecteerd</span>
+        <span>10 in catalogus</span>
+        <span>&#9925; HS &middot; &#9790; S</span>
+        <a class="genera-link" href="#/catalogus?genus=Molinia">&#8594; Catalogus</a>
+      </div>
+    </div>
+
+    <div class="genera-card">
+      <div class="genera-card-head">
+        <span class="genera-card-name">Persicaria</span>
+        <span class="genera-card-common">duizendknoop</span>
+        <span class="genus-tag suggested" style="margin-left:auto">Suggestie</span>
+      </div>
+      <div class="genera-desc">
+        Essentieel Oudolf-genus. P. amplexicaulis biedt maandenlange poker-achtige bloemen van juli tot november. Niets anders dekt zo'n lang seizoen. Weeft prachtig door de border.
+      </div>
+      <div class="genera-stats">
+        <span><strong>0</strong> geselecteerd</span>
+        <span>9 in catalogus</span>
+        <span>&#9728; Z &middot; &#9925; HS</span>
+        <a class="genera-link" href="#/catalogus?genus=Persicaria">&#8594; Catalogus</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="group-header">
+    <span class="group-title">Schaduw-genera</span>
+    <span class="group-count">10 genera</span>
+  </div>
+
+  <div class="genera-grid">
+    <div class="genera-card">
+      <div class="genera-card-head">
+        <span class="genera-card-name">Astrantia</span>
+        <span class="genera-card-common">zeeuws knoopje</span>
+        <span class="genus-tag shade" style="margin-left:auto">&#9790; Schaduw</span>
+      </div>
+      <div class="genera-desc">
+        Subtiele speldenkussenbloemen van mei tot oktober. Essentieel voor halfschaduw-zones. Fijne textuur die contrast biedt met grote bladvormers. A. major 'Roma' en 'Moulin Rouge' zijn Oudolf-favorieten.
+      </div>
+      <div class="genera-stats">
+        <span><strong>0</strong> geselecteerd</span>
+        <span>10 in catalogus</span>
+        <span>&#9925; HS &middot; &#9790; S</span>
+        <a class="genera-link" href="#/catalogus?genus=Astrantia">&#8594; Catalogus</a>
+      </div>
+    </div>
+
+    <div class="genera-card">
+      <div class="genera-card-head">
+        <span class="genera-card-name">Brunnera</span>
+        <span class="genera-card-common">vergeet-me-nietje</span>
+        <span class="genus-tag shade" style="margin-left:auto">&#9790; Schaduw</span>
+      </div>
+      <div class="genera-desc">
+        Prachtig zilveren bladwerk met blauwe voorjaarsbloemen. B. 'Jack Frost' is een klassieker voor schaduw. Uitstekende bodembedekker die ook in de winter decoratief blijft.
+      </div>
+      <div class="genera-stats">
+        <span><strong>0</strong> geselecteerd</span>
+        <span>3 in catalogus</span>
+        <span>&#9925; HS &middot; &#9790; S</span>
+        <a class="genera-link" href="#/catalogus?genus=Brunnera">&#8594; Catalogus</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 5: BESTELLING
+     ═══════════════════════════════════════════════════ -->
+<hr class="section-divider" data-label="Bestelling">
+
+<div class="page" id="bestelling">
+  <h1 class="page-title"><em>Bestelling</em></h1>
+
+  <!-- Natu-Ral -->
+  <div class="order-section">
+    <div class="order-section-head">
+      <span class="order-section-title">Natu-Ral</span>
+      <span class="order-section-sub">62 planten &middot; &euro;285,00</span>
+    </div>
+    <table class="order-table">
+      <thead>
+        <tr><th>Plant</th><th>Code</th><th>Aantal</th><th>Status</th><th>Prijs</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="plant-name">Echinacea purpurea <span class="plant-variant">'Green Twister'</span></span></td>
+          <td>G</td>
+          <td>2</td>
+          <td><span class="status-pill must-have">&#10022;</span></td>
+          <td>&euro;6,60</td>
+        </tr>
+        <tr>
+          <td><span class="plant-name">Veronicastrum virg. <span class="plant-variant">'Fascination'</span></span></td>
+          <td>H</td>
+          <td>2</td>
+          <td><span class="status-pill must-have">&#10022;</span></td>
+          <td>&euro;7,20</td>
+        </tr>
+        <tr>
+          <td><span class="plant-name">Helenium <span class="plant-variant">'Moerheim Beauty'</span></span></td>
+          <td>E</td>
+          <td>4</td>
+          <td><span class="status-pill alternatief">&#9675;</span></td>
+          <td>&euro;9,60</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Van Asselberghs -->
+  <div class="order-section">
+    <div class="order-section-head">
+      <span class="order-section-title">Van Asselberghs</span>
+      <span class="order-section-sub">13 planten &middot; &euro;128,50</span>
+    </div>
+    <table class="order-table">
+      <thead>
+        <tr><th>Plant</th><th>Code</th><th>Aantal</th><th>Status</th><th>Prijs</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="plant-name">Echinacea purpurea <span class="plant-variant">'Magnus'</span></span></td>
+          <td>&mdash;</td>
+          <td>3</td>
+          <td><span class="status-pill must-have">&#10022;</span></td>
+          <td>&euro;4,50</td>
+        </tr>
+        <tr>
+          <td><span class="plant-name">Phlox paniculata <span class="plant-variant">'Amethyst'</span></span></td>
+          <td>&mdash;</td>
+          <td>5</td>
+          <td><span class="status-pill variant-flex">&#9671;</span></td>
+          <td>&euro;7,50</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Custom -->
+  <div class="order-section">
+    <div class="order-section-head">
+      <span class="order-section-title">Handmatig toegevoegd</span>
+    </div>
+    <div class="custom-add">+ Plant toevoegen (niet in catalogus)</div>
+  </div>
+
+  <!-- Total -->
+  <div class="order-total-bar">
+    <span class="order-total-label">Totaal &mdash; 77 planten</span>
+    <span class="order-total-amount">&euro;413,50</span>
+  </div>
+
+  <div class="order-actions">
+    <button class="btn primary">&#128424; Print bestelling</button>
+    <button class="btn">&#128203; Kopieer als tekst</button>
+  </div>
+</div>
+
+<div style="height:80px"></div>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+*.xlsx
+*.pdf
+img-*.txt
+needs-*.txt
+missing-*.txt
+default-selections.json
+views-phase1bc.js
+catalogus-plan.md
+img-split-*
