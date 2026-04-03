@@ -3409,8 +3409,46 @@ function buildOrderSection(titleText, items, supplierKey) {
     }
     tr.appendChild(codeTd);
 
-    // Qty
-    tr.appendChild(el('td', '', String(item.selection.qty)));
+    // Qty stepper
+    var qtyTd = el('td');
+    var orderStepper = el('div', 'row-stepper');
+    orderStepper.style.cssText = 'display:inline-flex';
+    var oMin = el('button', 'row-stepper-btn', '\u2212');
+    var oVal = el('span', 'row-stepper-val', String(item.selection.qty));
+    var oPlus = el('button', 'row-stepper-btn', '+');
+    var priceTdRef = el('td');
+    oMin.addEventListener('click', (function(id, valEl, prTd, row) {
+      return function() {
+        var s = Store.getSelection(id);
+        if (!s) return;
+        if (s.qty > 1) {
+          Store.setQty(id, s.qty - 1);
+          valEl.textContent = s.qty;
+          var p = CATALOG_BY_ID[id];
+          var pr = getPrice(p, s.supplier);
+          prTd.textContent = formatEuro(pr * s.qty);
+        } else {
+          Store.togglePlant(id);
+          row.remove();
+        }
+      };
+    })(item.id, oVal, priceTdRef, tr));
+    oPlus.addEventListener('click', (function(id, valEl, prTd) {
+      return function() {
+        var s = Store.getSelection(id);
+        if (!s) return;
+        Store.setQty(id, s.qty + 1);
+        valEl.textContent = s.qty;
+        var p = CATALOG_BY_ID[id];
+        var pr = getPrice(p, s.supplier);
+        prTd.textContent = formatEuro(pr * s.qty);
+      };
+    })(item.id, oVal, priceTdRef));
+    orderStepper.appendChild(oMin);
+    orderStepper.appendChild(oVal);
+    orderStepper.appendChild(oPlus);
+    qtyTd.appendChild(orderStepper);
+    tr.appendChild(qtyTd);
 
     // Status icon
     var statusTd = el('td');
@@ -3419,10 +3457,11 @@ function buildOrderSection(titleText, items, supplierKey) {
     statusTd.appendChild(statusPill);
     tr.appendChild(statusTd);
 
-    // Line total
+    // Line total (linked to priceTdRef for stepper updates)
     var price = getPrice(item.plant, item.selection.supplier);
     var lineTotal = price * (item.selection.qty || 0);
-    tr.appendChild(el('td', '', formatEuro(lineTotal)));
+    priceTdRef.textContent = formatEuro(lineTotal);
+    tr.appendChild(priceTdRef);
 
     if (item.selection.purchased) {
       tr.style.textDecoration = 'line-through';
