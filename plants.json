@@ -9773,5 +9773,100 @@
       "https://apps.rhs.org.uk/plantselectorimages/detail/WSY0003427_4082.jpg"
     ],
     "id": "molinia-molinia-caerulea-variegata"
+  },
+  {
+    "genus": "Tricyrtis",
+    "species": "Tricyrtis formosana",
+    "variant": "",
+    "kleur": "lila",
+    "hoogte": 60,
+    "zon": false,
+    "hs": true,
+    "schaduw": true,
+    "code": "",
+    "inBorder": true,
+    "va": true,
+    "nr": false,
+    "vaPrice": 2.0,
+    "common": "arceringsbloem",
+    "images": [
+      "https://eit-planttoolbox-prod.s3.amazonaws.com/media/images/Tricyrtis_formosana__DFP4CasDREe6.jfif?AWSAccessKeyId=AKIAILRBSC3CQKL5NNSQ&Signature=FaF%2F%2BLBx4u5pjpcL2tALe8Otmos%3D&Expires=1775285788"
+    ],
+    "id": "tricyrtis-tricyrtis-formosana"
+  },
+  {
+    "genus": "Kniphofia",
+    "species": "Kniphofia",
+    "variant": "Papaya Popsicle",
+    "kleur": "oranje",
+    "hoogte": 60,
+    "zon": true,
+    "hs": false,
+    "schaduw": false,
+    "code": "I",
+    "inBorder": true,
+    "va": true,
+    "nr": true,
+    "vaPrice": 3.0,
+    "common": "vuurpijl",
+    "images": [
+      "https://d3bbsv6h7qkr8y.cloudfront.net/df/c1/dfc10a816868d5bed7094c6a9a877beb.jpg"
+    ],
+    "id": "kniphofia-kniphofia-papaya-popsicle"
+  },
+  {
+    "genus": "Iris",
+    "species": "Iris sibirica",
+    "variant": "Perry's Blue",
+    "kleur": "blauw",
+    "hoogte": 80,
+    "zon": true,
+    "hs": false,
+    "schaduw": false,
+    "code": "F",
+    "inBorder": true,
+    "va": false,
+    "nr": true,
+    "common": "Siberische lis",
+    "images": [
+      "https://www.burncoose.co.uk/site/img/products/main500/iris_siberica_perrys_blue_2367s.jpg"
+    ],
+    "id": "iris-iris-sibirica-perrys-blue"
+  },
+  {
+    "genus": "Kniphofia",
+    "species": "Kniphofia",
+    "variant": "Royal Castle",
+    "kleur": "oranje-rood",
+    "hoogte": 90,
+    "zon": true,
+    "hs": false,
+    "schaduw": false,
+    "code": "D",
+    "inBorder": true,
+    "va": false,
+    "nr": true,
+    "common": "vuurpijl",
+    "images": [
+      "https://www.jacksonsnurseries.co.uk/images/detailed/2/Kniphofia_Royal_Castle-1.webp"
+    ],
+    "id": "kniphofia-kniphofia-royal-castle"
+  },
+  {
+    "id": "achillea-achillea-millefolium-summer-pastels",
+    "genus": "Achillea",
+    "species": "Achillea millefolium",
+    "variant": "Summer Pastels",
+    "kleur": "gemengd",
+    "hoogte": 60,
+    "zon": true,
+    "hs": false,
+    "schaduw": false,
+    "code": "",
+    "inBorder": true,
+    "va": false,
+    "nr": false,
+    "common": "duizendblad",
+    "images": []
   }
 ]
